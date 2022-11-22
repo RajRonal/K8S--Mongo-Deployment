@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: mongo-express
+    labels:
+      app: front-end
+      release: test
+spec:
+   replicas:3
+   selectors:
+     matchLabels:
+         app: front-end
+         release: test
+   template:
+     metadata:
+        labels:
+          app: front-end
+          release: test
+     spec:
+       containers:
+       - name: mongo-express-container
+         image: mongo-express
+         ports:
+         - containerPort: 8081
+       env:
+       -  name: admin_user_name
+          valueFrom:
+            secretKeyRef:
+              name:mongo-secret
+              key: admin-username
+       -  name: admin_password
+          valueFrom:
+            secretKeyRef:
+               name: mongo-secret
+               key: admin-password
+       -  name: service
+          valueFrom:
+            configMapRef:
+               name: mongo-data
+               key: databse_url
+                
+---
+
+apiVersion:v1
+kind:Service
+metadata:
+   name: mongo-express-service
+spec:
+   selector:
+       app: front-end
+       release: test
+   type:LoadBalancer    
+   ports:
+   - name: http
+     port: 8081
+     protocol: TCP
+     targetPort: 801    
+      

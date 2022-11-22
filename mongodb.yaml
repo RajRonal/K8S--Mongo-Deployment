@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+   name: mongo-db
+   labels:
+      app: backend
+      release: test
+spec:
+  replicas:3
+  selector:
+   matchLabels:
+      app: backend
+      release: test
+  template:
+    metadata:
+        labels:  
+           app: backend
+           release: test    
+    spec:
+      containers:
+      - name: mongo-db-container
+        image: mongo
+        ports:
+        - containerPort: 27017
+      env:
+      - name: admin_user_name
+        valueFrom:
+          secretKeyRef:
+               name: mongo-secret
+               key: admin-username
+      - name: admin_password
+        valueFrom:
+          secretKeyRef:
+               name: mongo-secret
+               key: admin-password
+               
+---
+
+apiVersion:v1
+kind: Service
+metadata:
+   name: mongodb-service
+spec:
+    selector:
+         app: backend
+         release: test             
+    ports:
+    - name: http
+      port: 27017
+      targetPort: 27017
+       
